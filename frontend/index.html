@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voice POS</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        :root {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8f9fa;
+            --bg-card: #ffffff;
+            --bg-card-hover: #f1f3f4;
+            --accent: #000000;
+            --accent-light: #333333;
+            --success: #22c55e;
+            --danger: #ef4444;
+            --text-primary: #1a1a1a;
+            --text-secondary: #666666;
+            --text-muted: #999999;
+            --border: #e5e5e5;
+            --radius: 16px;
+            --radius-sm: 8px;
+        }
+        body {
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.5;
+            font-weight: 400;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 16px 24px;
+        }
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            padding: 12px 20px;
+            border-bottom: 1px solid var(--border);
+            background: var(--bg-primary);
+            border-radius: var(--radius);
+        }
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .logo-icon {
+            width: 36px;
+            height: 36px;
+            background: var(--accent);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+        h1 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--accent);
+            letter-spacing: -0.3px;
+        }
+        .business-switcher {
+            display: flex;
+            gap: 8px;
+            background: var(--bg-secondary);
+            padding: 6px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+        }
+        .business-btn {
+            padding: 10px 20px;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+        .business-btn:hover {
+            color: var(--text-primary);
+        }
+        .business-btn.active {
+            background: var(--accent);
+            color: white;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 420px;
+            gap: 24px;
+        }
+        @media (max-width: 1024px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        .panel {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            padding: 16px 20px;
+            border: 1px solid var(--border);
+        }
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 14px;
+        }
+        .panel-title {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .panel-title::before {
+            content: '';
+            width: 3px;
+            height: 14px;
+            background: var(--accent);
+            border-radius: 2px;
+        }
+        .mic-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .mic-btn {
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            border: 2px solid #333;
+            background: rgba(0, 0, 0, 0.06);
+            color: #333;
+            font-size: 1.75rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .mic-btn:hover {
+            background: rgba(0, 0, 0, 0.1);
+            transform: scale(1.03);
+        }
+        .mic-btn.recording {
+            background: rgba(239, 68, 68, 0.15);
+            border-color: var(--danger);
+            color: var(--danger);
+            animation: pulse-ring 1.5s infinite;
+        }
+        @keyframes pulse-ring {
+            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+            70% { box-shadow: 0 0 0 20px rgba(239, 68, 68, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+        .mic-status {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            text-align: center;
+        }
+        .mic-status.listening {
+            color: var(--danger);
+            font-weight: 600;
+        }
+        .transcript {
+            height: 240px;
+            overflow-y: auto;
+            background: var(--bg-secondary);
+            border-radius: var(--radius-sm);
+            padding: 12px;
+            border: 1px solid var(--border);
+        }
+        .transcript::-webkit-scrollbar {
+            width: 6px;
+        }
+        .transcript::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+            border-radius: 3px;
+        }
+        .transcript::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 3px;
+        }
+        .transcript-item {
+            margin-bottom: 10px;
+            padding: 10px 12px;
+            border-radius: var(--radius-sm);
+            animation: slideIn 0.3s ease;
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .transcript-user {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-left: 3px solid var(--accent);
+        }
+        .transcript-assistant {
+            background: #f5f5f5;
+            border: 1px solid var(--border);
+            border-left: 3px solid var(--success);
+        }
+        .transcript-label {
+            font-size: 0.65rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+            color: var(--text-muted);
+        }
+        .transcript-user .transcript-label { color: var(--accent); }
+        .transcript-assistant .transcript-label { color: var(--success); }
+        .transcript-text {
+            line-height: 1.4;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+        }
+        .timing-info {
+            margin-top: 16px;
+            padding: 12px 16px;
+            background: var(--bg-secondary);
+            border-radius: var(--radius-sm);
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            display: none;
+            border: 1px solid var(--border);
+        }
+        .timing-info span {
+            margin-right: 16px;
+        }
+        .timing-info strong {
+            color: var(--text-secondary);
+        }
+        .order-items {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .order-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px;
+            background: var(--bg-secondary);
+            border-radius: var(--radius-sm);
+            margin-bottom: 10px;
+            transition: all 0.2s;
+            border: 1px solid var(--border);
+        }
+        .order-item:hover {
+            background: var(--bg-card-hover);
+        }
+        .order-item-number {
+            width: 28px;
+            height: 28px;
+            background: var(--accent);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: white;
+            flex-shrink: 0;
+        }
+        .order-item-info {
+            flex: 1;
+            min-width: 0;
+        }
+        .order-item-name {
+            font-weight: 700;
+            color: var(--text-primary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .order-item-price {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+        .order-item-qty {
+            background: var(--bg-card);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            border: 1px solid var(--border);
+        }
+        .order-item-total {
+            font-weight: 800;
+            color: var(--accent);
+            min-width: 70px;
+            text-align: right;
+        }
+        .remove-btn {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .remove-btn:hover {
+            border-color: var(--danger);
+            color: var(--danger);
+        }
+        .order-footer {
+            margin-top: 14px;
+            padding-top: 14px;
+            border-top: 1px solid var(--border);
+        }
+        .order-total {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            font-size: 1.1rem;
+        }
+        .order-total-label {
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+        .order-total-amount {
+            font-weight: 800;
+            color: var(--accent);
+        }
+        .order-actions {
+            display: flex;
+            gap: 8px;
+        }
+        .btn {
+            flex: 1;
+            padding: 10px 16px;
+            border: 2px solid var(--accent);
+            border-radius: var(--radius-sm);
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-primary {
+            background: var(--accent);
+            color: white;
+        }
+        .btn-primary:hover {
+            background: var(--text-primary);
+        }
+        .btn-danger {
+            background: transparent;
+            color: var(--text-secondary);
+        }
+        .btn-danger:hover {
+            border-color: var(--danger);
+            color: var(--danger);
+        }
+        .empty-order {
+            text-align: center;
+            padding: 32px 16px;
+            color: var(--text-muted);
+        }
+        .empty-order-icon {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            opacity: 0.3;
+        }
+        .menu-section {
+            margin-bottom: 16px;
+        }
+        .menu-category-title {
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: var(--accent);
+            margin-bottom: 8px;
+            padding-bottom: 6px;
+            border-bottom: 1px solid var(--border);
+        }
+        .menu-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 10px;
+            background: var(--bg-secondary);
+            border-radius: var(--radius-sm);
+            margin-bottom: 6px;
+            transition: all 0.2s;
+            border: 1px solid var(--border);
+        }
+        .menu-item:hover {
+            background: var(--bg-card-hover);
+        }
+        .menu-item-name {
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+        .menu-item-oos {
+            font-size: 0.7rem;
+            color: var(--danger);
+            margin-left: 6px;
+            font-weight: 500;
+        }
+        .menu-item-price {
+            font-weight: 700;
+            color: var(--accent);
+            font-size: 0.9rem;
+        }
+        .menu-categories {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(200px, 1fr));
+            gap: 12px;
+            max-width: 1400px;
+            margin: 0 auto;
+            justify-content: center;
+        }
+        @media (max-width: 1100px) {
+            .menu-categories {
+                grid-template-columns: repeat(2, 1fr);
+                max-width: 800px;
+            }
+        }
+        @media (max-width: 600px) {
+            .menu-categories {
+                grid-template-columns: 1fr;
+                max-width: 400px;
+            }
+        }
+        .menu-category {
+            background: var(--bg-secondary);
+            border-radius: var(--radius-sm);
+            padding: 12px;
+            border: 1px solid var(--border);
+        }
+        .menu-category-header {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--accent);
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .menu-category-count {
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            background: var(--bg-secondary);
+            border-radius: 20px;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            border: 1px solid var(--border);
+        }
+        .status-badge::before {
+            content: '';
+            width: 6px;
+            height: 6px;
+            background: var(--success);
+            border-radius: 50%;
+            animation: blink 2s infinite;
+        }
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <div class="logo-icon">🎙️</div>
+                <h1>VOICE POS</h1>
+            </div>
+            <div class="business-switcher">
+                <button class="business-btn active" data-business="burger_barn" onclick="switchBusiness('burger_barn')">Burger Barn</button>
+                <button class="business-btn" data-business="pizza_plaza" onclick="switchBusiness('pizza_plaza')">Pizza Plaza</button>
+            </div>
+        </header>
+
+        <div class="main-grid">
+            <div class="panel">
+                <div class="panel-header">
+                    <span class="panel-title">Voice Assistant</span>
+                    <div class="status-badge">Ready</div>
+                </div>
+                <div class="mic-container">
+                    <button class="mic-btn" id="micBtn" onclick="toggleRecording()">🎤</button>
+                    <span class="mic-status" id="micStatus">Tap to start ordering</span>
+                </div>
+                <div class="transcript" id="transcript">
+                    <div class="transcript-item transcript-assistant">
+                        <div class="transcript-label">Assistant</div>
+                        <div class="transcript-text">Hi! I'm your voice ordering assistant. Tap the microphone and tell me what you'd like to order!</div>
+                    </div>
+                </div>
+                <div class="timing-info" id="timingInfo"></div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-header">
+                    <span class="panel-title">Current Order</span>
+                </div>
+                <div class="order-items" id="orderItems">
+                    <div class="empty-order">
+                        <div class="empty-order-icon">🛒</div>
+                        <div style="font-weight: 600;">Your cart is empty</div>
+                        <div style="font-size: 0.85rem; margin-top: 4px;">Add items by voice command</div>
+                    </div>
+                </div>
+                <div class="order-footer" id="orderFooter" style="display: none;">
+                    <div class="order-total">
+                        <span class="order-total-label">Total</span>
+                        <span class="order-total-amount" id="totalAmount">$0.00</span>
+                    </div>
+                    <div class="order-actions">
+                        <button class="btn btn-primary" onclick="confirmOrder()">Confirm Order</button>
+                        <button class="btn btn-danger" onclick="clearOrder()">Clear</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel" style="margin-top: 24px;">
+            <div class="panel-header">
+                <span class="panel-title">Menu</span>
+            </div>
+            <div id="menuList" class="menu-categories">
+                Loading menu...
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let isRecording = false;
+        let mediaRecorder = null;
+        let audioChunks = [];
+        let currentBusiness = 'burger_barn';
+
+        async function switchBusiness(business) {
+            currentBusiness = business;
+            document.querySelectorAll('.business-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.business === business);
+            });
+            
+            const response = await fetch('/switch-business', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ business })
+            });
+            
+            if (response.ok) {
+                document.getElementById('transcript').innerHTML = `
+                    <div class="transcript-item transcript-assistant">
+                        <div class="transcript-label">Assistant</div>
+                        <div class="transcript-text">Switched to ${business === 'burger_barn' ? 'Burger Barn' : 'Pizza Plaza'}! What would you like to order?</div>
+                    </div>
+                `;
+                loadMenu();
+                loadOrder();
+            }
+        }
+
+        async function loadMenu() {
+            const response = await fetch('/menu');
+            const data = await response.json();
+            const menuList = document.getElementById('menuList');
+            
+            const categories = {};
+            data.items.forEach(item => {
+                if (!categories[item.category]) categories[item.category] = [];
+                categories[item.category].push(item);
+            });
+            
+            let html = '<div class="menu-categories">';
+            Object.entries(categories).forEach(([category, items]) => {
+                html += `
+                    <div class="menu-category">
+                        <div class="menu-category-header">
+                            <span>${category.charAt(0).toUpperCase() + category.slice(1)}</span>
+                            <span class="menu-category-count">${items.length} items</span>
+                        </div>
+                `;
+                items.forEach(item => {
+                    html += `
+                        <div class="menu-item">
+                            <span class="menu-item-name">
+                                ${item.name}
+                                ${!item.in_stock ? '<span class="menu-item-oos">(Out of Stock)</span>' : ''}
+                            </span>
+                            <span class="menu-item-price">$${item.price.toFixed(2)}</span>
+                        </div>
+                    `;
+                });
+                html += '</div>';
+            });
+            html += '</div>';
+            menuList.innerHTML = html;
+        }
+
+        async function loadOrder() {
+            const response = await fetch('/order');
+            const data = await response.json();
+            const orderItems = document.getElementById('orderItems');
+            const orderFooter = document.getElementById('orderFooter');
+            const totalAmount = document.getElementById('totalAmount');
+            
+            if (data.items.length === 0) {
+                orderItems.innerHTML = `
+                    <div class="empty-order">
+                        <div class="empty-order-icon">🛒</div>
+                        <div style="font-weight: 600;">Your cart is empty</div>
+                        <div style="font-size: 0.85rem; margin-top: 4px;">Add items by voice command</div>
+                    </div>
+                `;
+                orderFooter.style.display = 'none';
+            } else {
+                orderItems.innerHTML = data.items.map((item, idx) => `
+                    <div class="order-item">
+                        <div class="order-item-number">${idx + 1}</div>
+                        <div class="order-item-info">
+                            <div class="order-item-name">${item.name}</div>
+                            <div class="order-item-price">$${item.price.toFixed(2)} each</div>
+                        </div>
+                        <div class="order-item-qty">x${item.quantity}</div>
+                        <div class="order-item-total">$${(item.price * item.quantity).toFixed(2)}</div>
+                        <button class="remove-btn" onclick="removeItem(${idx})">Remove</button>
+                    </div>
+                `).join('');
+                totalAmount.textContent = `$${data.total.toFixed(2)}`;
+                orderFooter.style.display = 'block';
+            }
+        }
+
+        async function clearOrder() {
+            await fetch('/order/clear', { method: 'POST' });
+            loadOrder();
+        }
+
+        async function removeItem(index) {
+            await fetch('/order/clear', { method: 'POST' });
+            loadOrder();
+        }
+
+        async function toggleRecording() {
+            if (!isRecording) {
+                startRecording();
+            } else {
+                stopRecording();
+            }
+        }
+
+        async function startRecording() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream);
+                audioChunks = [];
+                
+                mediaRecorder.ondataavailable = event => {
+                    audioChunks.push(event.data);
+                };
+                
+                mediaRecorder.onstop = async () => {
+                    const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                    const arrayBuffer = await audioBlob.arrayBuffer();
+                    const audioBytes = new Uint8Array(arrayBuffer);
+                    
+                    document.getElementById('micStatus').textContent = 'Processing...';
+                    document.getElementById('micStatus').classList.remove('listening');
+                    
+                    const base64Audio = btoa(String.fromCharCode(...audioBytes));
+                    
+                    try {
+                        const response = await fetch('/chat', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ audio: base64Audio })
+                        });
+                        
+                        const data = await response.json();
+                        
+                        addTranscriptItem('user', data.transcript);
+                        if (data.response) {
+                            addTranscriptItem('assistant', data.response);
+                        }
+                        
+                        if (data.timings) {
+                            const t = data.timings;
+                            document.getElementById('timingInfo').innerHTML = `
+                                <span><strong>STT:</strong> ${t.stt_seconds}s</span>
+                                <span><strong>LLM:</strong> ${t.llm_seconds}s</span>
+                            `;
+                            document.getElementById('timingInfo').style.display = 'block';
+                        }
+                        
+                        loadOrder();
+                    } catch (err) {
+                        console.error('Error:', err);
+                        document.getElementById('micStatus').textContent = 'Error processing. Try again.';
+                    }
+                    
+                    stream.getTracks().forEach(track => track.stop());
+                };
+                
+                mediaRecorder.start();
+                isRecording = true;
+                document.getElementById('micBtn').classList.add('recording');
+                document.getElementById('micBtn').textContent = '⏹';
+                document.getElementById('micStatus').textContent = 'Listening...';
+                document.getElementById('micStatus').classList.add('listening');
+                
+            } catch (err) {
+                console.error('Microphone error:', err);
+                document.getElementById('micStatus').textContent = 'Microphone access denied';
+            }
+        }
+
+        function stopRecording() {
+            if (mediaRecorder && isRecording) {
+                mediaRecorder.stop();
+                isRecording = false;
+                document.getElementById('micBtn').classList.remove('recording');
+                document.getElementById('micBtn').textContent = '🎤';
+                document.getElementById('micStatus').textContent = 'Processing...';
+            }
+        }
+
+        function addTranscriptItem(role, text) {
+            const transcript = document.getElementById('transcript');
+            const item = document.createElement('div');
+            item.className = `transcript-item transcript-${role}`;
+            item.innerHTML = `
+                <div class="transcript-label">${role === 'user' ? 'You' : 'Assistant'}</div>
+                <div class="transcript-text">${text}</div>
+            `;
+            transcript.appendChild(item);
+            transcript.scrollTop = transcript.scrollHeight;
+        }
+
+        async function confirmOrder() {
+            await fetch('/order/clear', { method: 'POST' });
+            loadOrder();
+            document.getElementById('transcript').innerHTML = `
+                <div class="transcript-item transcript-assistant">
+                    <div class="transcript-label">Assistant</div>
+                    <div class="transcript-text">Order confirmed! Thank you for ordering. 🎉</div>
+                </div>
+            `;
+        }
+
+        async function initPage() {
+            await fetch('/order/clear', { method: 'POST' });
+            loadMenu();
+            loadOrder();
+        }
+
+        initPage();
+    </script>
+</body>
+</html>
