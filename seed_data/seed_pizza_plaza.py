@@ -2,7 +2,10 @@ import sqlite3
 import json
 import os
 
-DB_PATH = os.path.join(os.path.dirname(__file__), "..", "backend", "db", "pizza_plaza.sqlite")
+DB_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "backend", "db")
+DB_PATH = os.path.join(DB_DIR, "pizza_plaza.sqlite")
+
+os.makedirs(DB_DIR, exist_ok=True)
 
 conn = sqlite3.connect(DB_PATH)
 cursor = conn.cursor()

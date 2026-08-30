@@ -13,11 +13,11 @@ from dotenv import load_dotenv
 dotenv_path = Path(__file__).parent.parent / ".env"
 load_dotenv(dotenv_path)
 
-from order_state import OrderState
-from adapters import BurgerBarnAdapter, PizzaPlazaAdapter, NormalizedItem
-from llm.openrouter_client import OpenRouterClient
-from stt.parakeet_engine import ParakeetSTT
-from tts.deepgram_flux import DeepgramFluxTTS
+from .order_state import OrderState
+from .adapters import BurgerBarnAdapter, PizzaPlazaAdapter, NormalizedItem
+from .llm.openrouter_client import OpenRouterClient
+from .stt.parakeet_engine import ParakeetSTT
+from .tts.deepgram_flux import DeepgramFluxTTS
 
 
 app = FastAPI()

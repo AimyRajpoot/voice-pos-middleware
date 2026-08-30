@@ -16,7 +16,7 @@ venv/
 
 .env
 
-# Frontend
+# Frontend dependencies and build files
 node_modules/
 .next/
 next-env.d.ts
