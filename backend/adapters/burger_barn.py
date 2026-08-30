@@ -7,7 +7,8 @@ from .base import BusinessAdapter, NormalizedItem, NormalizedModifier
 class BurgerBarnAdapter(BusinessAdapter):
     def __init__(self, db_path: Optional[str] = None):
         if db_path is None:
-            db_path = os.path.join(os.path.dirname(__file__), "..", "db", "burger_barn.sqlite")
+            backend_dir = os.path.dirname(os.path.dirname(__file__))
+            db_path = os.path.join(backend_dir, "db", "burger_barn.sqlite")
         self.db_path = db_path
         self._ensure_stock_column()
 

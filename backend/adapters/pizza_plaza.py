@@ -8,7 +8,8 @@ from .base import BusinessAdapter, NormalizedItem, NormalizedModifier
 class PizzaPlazaAdapter(BusinessAdapter):
     def __init__(self, db_path: Optional[str] = None):
         if db_path is None:
-            db_path = os.path.join(os.path.dirname(__file__), "..", "db", "pizza_plaza.sqlite")
+            backend_dir = os.path.dirname(os.path.dirname(__file__))
+            db_path = os.path.join(backend_dir, "db", "pizza_plaza.sqlite")
         self.db_path = db_path
 
     def _get_connection(self):

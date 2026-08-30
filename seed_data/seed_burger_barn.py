@@ -1,7 +1,10 @@
 import sqlite3
 import os
 
-DB_PATH = os.path.join(os.path.dirname(__file__), "..", "backend", "db", "burger_barn.sqlite")
+DB_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "backend", "db")
+DB_PATH = os.path.join(DB_DIR, "burger_barn.sqlite")
+
+os.makedirs(DB_DIR, exist_ok=True)
 
 conn = sqlite3.connect(DB_PATH)
 cursor = conn.cursor()
